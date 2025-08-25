@@ -47,7 +47,15 @@ function Chat() {
   const [unreadCounts, setUnreadCounts] = useState<{[key: string]: number}>({});
   const [lastMessages, setLastMessages] = useState<{[key: string]: string}>({});
   const [incomingCallData, setIncomingCallData] = useState<any>(null);
+  const [showStickers, setShowStickers] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const stickers = [
+    '😀', '😂', '🥰', '😍', '🤔', '😎', '🥳', '😴',
+    '👍', '👎', '👏', '🙌', '💪', '🤝', '🙏', '✌️',
+    '❤️', '💕', '💯', '🔥', '⭐', '🎉', '🎊', '🌟',
+    '🐶', '🐱', '🦄', '🐸', '🦋', '🌸', '🌈', '☀️'
+  ];
 
   // Auto-scroll to bottom of messages
   const scrollToBottom = () => {
@@ -64,8 +72,12 @@ function Chat() {
     // Handle window resize for responsive behavior
     const handleResize = () => {
       if (window.innerWidth < 768) {
-        setShowSidebar(!selectedChat);
+        // On mobile, only show sidebar if no chat is selected
+        if (!selectedChat) {
+          setShowSidebar(true);
+        }
       } else {
+        // On desktop, always show sidebar
         setShowSidebar(true);
       }
     };
@@ -299,6 +311,35 @@ function Chat() {
       console.error('Failed to fetch messages:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSendSticker = async (sticker: string) => {
+    if (!selectedChat || !user) return;
+    
+    try {
+      const chatId = generateChatId(user.id, selectedChat.id);
+      const response = await messagesAPI.createMessage(chatId, sticker);
+      
+      const newMessage = {
+        id: response.data._id,
+        text: sticker,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        sender: 'me' as const
+      };
+      
+      setMessages(prev => [...prev, newMessage]);
+      setLastMessages(prev => ({ ...prev, [selectedChat.id]: sticker }));
+      setShowStickers(false);
+      
+      socket.emit('sendMessage', {
+        chatId: chatId,
+        userId: user.id,
+        text: sticker,
+        timestamp: new Date()
+      });
+    } catch (error) {
+      console.error('Failed to send sticker:', error);
     }
   };
 
@@ -552,8 +593,30 @@ function Chat() {
 
             {/* Message Input */}
             <div className="p-3 md:p-5 pb-16 md:pb-5 border-t border-gray-200 bg-white safe-area-pb">
+              {/* Sticker Picker */}
+              {showStickers && (
+                <div className="mb-3 p-3 bg-gray-50 rounded-2xl">
+                  <div className="grid grid-cols-8 gap-2">
+                    {stickers.map((sticker, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleSendSticker(sticker)}
+                        className="text-2xl p-2 hover:bg-gray-200 rounded-lg transition-colors"
+                      >
+                        {sticker}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
               <div className="flex items-center gap-2 md:gap-3 bg-gray-50 rounded-full px-3 md:px-4 py-2">
-                <button className="p-1 text-gray-500 hover:text-gray-700 transition-colors">
+                <button 
+                  onClick={() => setShowStickers(!showStickers)}
+                  className={`p-1 transition-colors ${
+                    showStickers ? 'text-blue-500' : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
                   <Smile size={18} className="md:w-5 md:h-5" />
                 </button>
                 
