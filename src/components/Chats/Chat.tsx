@@ -551,7 +551,7 @@ function Chat() {
             </div>
 
             {/* Message Input */}
-            <div className="p-3 md:p-5 border-t border-gray-200 bg-white">
+            <div className="p-3 md:p-5 pb-16 md:pb-5 border-t border-gray-200 bg-white safe-area-pb">
               <div className="flex items-center gap-2 md:gap-3 bg-gray-50 rounded-full px-3 md:px-4 py-2">
                 <button className="p-1 text-gray-500 hover:text-gray-700 transition-colors">
                   <Smile size={18} className="md:w-5 md:h-5" />

@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 interface Story {
@@ -29,6 +29,7 @@ const Stories = () => {
   };
 
   const handleUpload = async (file: File, base64Image: string) => {
+    console.log('Uploading story:', file.name)
     try {
       // Create new story object
       const newStory: Story = {
