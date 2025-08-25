@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { Search, Send, Phone, Video, MoreVertical, Smile, ArrowLeft, Menu } from 'lucide-react';
+import { Search, Send, Phone, Video, Smile, ArrowLeft } from 'lucide-react';
 import { messagesAPI, usersAPI, callAPI } from '../../services/api';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import VideoCall from '../VideoCall/VideoCall';
 import CallModal from '../VideoCall/CallModal';
 import socket from '../../services/socket';
@@ -103,7 +103,7 @@ function Chat() {
       }
     });
 
-    socket.on('callUser', ({ signal, from, name, callType }) => {
+    socket.on('callUser', ({ callType }) => {
       setCallType(callType);
       setCallModalType('incoming');
       setShowCallModal(true);
@@ -115,7 +115,7 @@ function Chat() {
       setCurrentAudio(audio);
     });
 
-    socket.on('callAccepted', (signal) => {
+    socket.on('callAccepted', () => {
       if (currentAudio) {
         currentAudio.pause();
         currentAudio.currentTime = 0;

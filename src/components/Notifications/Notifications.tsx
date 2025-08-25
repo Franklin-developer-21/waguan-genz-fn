@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Bell, UserPlus, Check, CheckCheck } from 'lucide-react';
 import { notificationsAPI, usersAPI } from '../../services/api';
-import { useAuth } from '../../contexts/AuthContext';
+// import { useAuth } from '../../hooks/useAuth';
 import socket from '../../services/socket';
 
 interface Notification {
@@ -21,7 +21,7 @@ interface Notification {
 }
 
 const Notifications = () => {
-  const { user } = useAuth();
+  // const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [followedBack, setFollowedBack] = useState<Set<string>>(new Set());
@@ -30,13 +30,13 @@ const Notifications = () => {
     fetchNotifications();
     
     // TODO: Enable when Socket.IO is properly configured
-    // socket.on('newNotification', (notification: Notification) => {
-    //   setNotifications(prev => [notification, ...prev]);
-    // });
+    socket.on('newNotification', (notification: Notification) => {
+      setNotifications(prev => [notification, ...prev]);
+    });
 
-    // return () => {
-    //   socket.off('newNotification');
-    // };
+    return () => {
+      socket.off('newNotification');
+    };
   }, []);
 
   const fetchNotifications = async () => {

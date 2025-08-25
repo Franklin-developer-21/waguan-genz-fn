@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, X } from 'lucide-react';
 import { postsAPI } from '../../services/api';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 
 const PostForm = () => {
   const { user } = useAuth();
@@ -33,12 +33,19 @@ const PostForm = () => {
 
     setIsLoading(true);
     try {
-      const formData = new FormData();
-      formData.append('image', image);
-      formData.append('caption', caption);
-      formData.append('userId', user.id);
+      // Convert image to base64
+      const reader = new FileReader();
+      const base64Image = await new Promise<string>((resolve) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(image);
+      });
 
-      await postsAPI.createPost(formData);
+      const postData = {
+        image: base64Image,
+        caption: caption
+      };
+
+      await postsAPI.createPost(postData);
       navigate('/');
     } catch (error) {
       console.error('Failed to create post:', error);

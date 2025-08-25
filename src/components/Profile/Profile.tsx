@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Camera, Edit3, MapPin, Calendar, Mail, Phone, Plus, X, Image } from 'lucide-react';
 import { postsAPI, authAPI } from '../../services/api';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 
 const Profile = () => {
   const { user } = useAuth();

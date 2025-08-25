@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { UserPlus, UserMinus, Users as UsersIcon } from 'lucide-react';
 import { usersAPI } from '../../services/api';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 
 interface User {
   _id: string;
@@ -29,7 +29,7 @@ const Users = () => {
       setUsers(allUsers);
       
       // Set initially following users
-      const following = new Set(
+      const following = new Set<string>(
         allUsers
           .filter((u: User) => u.followers && u.followers.includes(user?.id || ''))
           .map((u: User) => u._id)

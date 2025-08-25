@@ -1,6 +1,6 @@
-import { ReactNode } from 'react';
+import type{ ReactNode } from 'react';
 import Sidebar from '../Sidebar/Sidebar';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 
 interface LayoutProps {
   children: ReactNode;

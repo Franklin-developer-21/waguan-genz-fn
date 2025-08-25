@@ -1,11 +1,34 @@
 import { useState, type FormEvent } from 'react';
 import { Heart, MessageCircle, Share, Bookmark } from 'lucide-react';
 import { postsAPI } from '../../services/api';
-import { useAuth } from '../../contexts/AuthContext';
-import type{ Post as PostType, User } from '../../types';
+import { useAuth } from '../../hooks/useAuth';
+import type { Post as PostType } from '../../types';
+
+// Local type extensions
+interface User {
+  id: string;
+  username: string;
+}
+
+interface Reply {
+  userId: string | User;
+  text: string;
+  timestamp: Date;
+}
+
+interface Comment {
+  userId: string | User;
+  text: string;
+  timestamp: Date;
+  replies?: Reply[];
+}
 
 interface PostProps {
-  post: PostType;
+  post: PostType & {
+    comments: Comment[]; // override to match our local Comment type
+    userId: string | User;
+    likes: string[];
+  };
 }
 
 const Post = ({ post }: PostProps) => {
@@ -16,14 +39,14 @@ const Post = ({ post }: PostProps) => {
   const [isLiked, setIsLiked] = useState(user ? post.likes.includes(user.id) : false);
   const [showComments, setShowComments] = useState(false);
   const [likesCount, setLikesCount] = useState(post.likes.length);
-  const [comments, setComments] = useState(post.comments);
+  const [comments, setComments] = useState<Comment[]>(post.comments || []);
 
   const handleLike = async () => {
     if (!user) return;
     try {
       await postsAPI.likePost(post._id);
       setIsLiked(!isLiked);
-      setLikesCount(prev => isLiked ? prev - 1 : prev + 1);
+      setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
     } catch (error) {
       console.error('Failed to like post:', error);
     }
@@ -34,13 +57,13 @@ const Post = ({ post }: PostProps) => {
     if (!comment.trim() || !user) return;
     try {
       await postsAPI.commentPost(post._id, comment);
-      const newComment = {
+      const newComment: Comment = {
         userId: user.id,
         text: comment,
         timestamp: new Date(),
-        replies: []
+        replies: [],
       };
-      setComments(prev => [...prev, newComment]);
+      setComments((prev) => [...prev, newComment]);
       setComment('');
     } catch (error) {
       console.error('Failed to comment:', error);
@@ -51,17 +74,18 @@ const Post = ({ post }: PostProps) => {
     e.preventDefault();
     if (!replyText.trim() || !user) return;
     try {
-      // Add API call for replies when backend is ready
-      const newReply = {
+      const newReply: Reply = {
         userId: user.id,
         text: replyText,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
-      setComments(prev => prev.map((c, i) => 
-        i === commentIndex 
-          ? { ...c, replies: [...(c.replies || []), newReply] }
-          : c
-      ));
+      setComments((prev) =>
+        prev.map((c, i) =>
+          i === commentIndex
+            ? { ...c, replies: [...(c.replies || []), newReply] }
+            : c
+        )
+      );
       setReplyText('');
       setReplyingTo(null);
     } catch (error) {
@@ -69,8 +93,10 @@ const Post = ({ post }: PostProps) => {
     }
   };
 
-  const getUsername = (userId: User | string) => {
-    return typeof userId === 'object' ? userId.username : 'user';
+  const getUsername = (userId: User | string): string => {
+    if (typeof userId === 'object') return userId.username;
+    if (typeof userId === 'string' && user && user.id === userId) return user.username;
+    return typeof userId === 'string' ? userId : 'user';
   };
 
   const formatTime = (timestamp: Date | string) => {
@@ -102,7 +128,11 @@ const Post = ({ post }: PostProps) => {
           </div>
         </div>
         <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-          <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+          <svg
+            className="w-5 h-5 text-gray-600"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
             <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
           </svg>
         </button>
@@ -110,9 +140,9 @@ const Post = ({ post }: PostProps) => {
 
       {/* Image Container */}
       <div className="relative bg-gray-50">
-        <img 
-          src={post.imageUrl} 
-          alt="post" 
+        <img
+          src={post.imageUrl}
+          alt="post"
           className="w-full max-h-96 object-contain"
           style={{ minHeight: '200px' }}
         />
@@ -122,38 +152,52 @@ const Post = ({ post }: PostProps) => {
       <div className="px-4 py-3">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={handleLike}
               className="flex items-center gap-2 hover:bg-gray-50 p-2 rounded-full transition-all duration-200 group"
             >
-              <Heart 
-                size={24} 
-                fill={isLiked ? '#ff3040' : 'none'} 
+              <Heart
+                size={24}
+                fill={isLiked ? '#ff3040' : 'none'}
                 color={isLiked ? '#ff3040' : '#374151'}
-                className={`transition-transform duration-200 ${isLiked ? 'scale-110' : 'group-hover:scale-105'}`}
+                className={`transition-transform duration-200 ${
+                  isLiked ? 'scale-110' : 'group-hover:scale-105'
+                }`}
               />
-              <span className="text-sm font-medium text-gray-700">{likesCount}</span>
+              <span className="text-sm font-medium text-gray-700">
+                {likesCount}
+              </span>
             </button>
-            
-            <button 
+
+            <button
               onClick={() => setShowComments(!showComments)}
               className="flex items-center gap-2 hover:bg-gray-50 p-2 rounded-full transition-all duration-200 group"
             >
-              <MessageCircle size={24} className="text-gray-700 group-hover:scale-105 transition-transform duration-200" />
-              <span className="text-sm font-medium text-gray-700">{comments.length}</span>
+              <MessageCircle
+                size={24}
+                className="text-gray-700 group-hover:scale-105 transition-transform duration-200"
+              />
+              <span className="text-sm font-medium text-gray-700">
+                {comments.length}
+              </span>
             </button>
-            
+
             <button className="flex items-center gap-2 hover:bg-gray-50 p-2 rounded-full transition-all duration-200 group">
-              <Share size={24} className="text-gray-700 group-hover:scale-105 transition-transform duration-200" />
+              <Share
+                size={24}
+                className="text-gray-700 group-hover:scale-105 transition-transform duration-200"
+              />
             </button>
           </div>
-          
+
           <button className="hover:bg-gray-50 p-2 rounded-full transition-all duration-200 group">
-            <Bookmark size={24} className="text-gray-700 group-hover:scale-105 transition-transform duration-200" />
+            <Bookmark
+              size={24}
+              className="text-gray-700 group-hover:scale-105 transition-transform duration-200"
+            />
           </button>
         </div>
-        
-        {/* Likes Count */}
+
         {likesCount > 0 && (
           <div className="text-sm font-semibold text-gray-900 mb-2">
             {likesCount} {likesCount === 1 ? 'like' : 'likes'}
@@ -182,41 +226,41 @@ const Post = ({ post }: PostProps) => {
           </button>
         </div>
       )}
-      
+
       {/* Comments */}
       {showComments && (
         <div className="px-4 pb-3 max-h-60 overflow-y-auto">
           <div className="space-y-3">
             {comments.map((c, i) => (
-              <div key={i} className="">
+              <div key={i}>
                 <div className="text-sm text-gray-900">
                   <span className="font-semibold mr-2">
-                    {typeof c.userId === 'object' ? c.userId.username : user?.username || 'user'}
+                    {getUsername(c.userId)}
                   </span>
                   {c.text}
                   <button
-                    onClick={() => setReplyingTo(replyingTo === i ? null : i)}
+                    onClick={() =>
+                      setReplyingTo(replyingTo === i ? null : i)
+                    }
                     className="ml-3 text-xs text-gray-500 hover:text-gray-700 font-medium"
                   >
                     Reply
                   </button>
                 </div>
-                
-                {/* Replies */}
+
                 {c.replies && c.replies.length > 0 && (
                   <div className="ml-4 mt-2 space-y-2 border-l-2 border-gray-100 pl-3">
-                    {c.replies.map((reply: any, ri: number) => (
+                    {c.replies.map((reply, ri) => (
                       <div key={ri} className="text-sm text-gray-800">
                         <span className="font-semibold mr-2">
-                          {typeof reply.userId === 'object' ? reply.userId.username : user?.username || 'user'}
+                          {getUsername(reply.userId)}
                         </span>
                         {reply.text}
                       </div>
                     ))}
                   </div>
                 )}
-                
-                {/* Reply Input */}
+
                 {replyingTo === i && (
                   <form onSubmit={(e) => handleReply(e, i)} className="mt-2">
                     <div className="flex gap-2">
@@ -230,8 +274,8 @@ const Post = ({ post }: PostProps) => {
                         type="submit"
                         disabled={!replyText.trim()}
                         className={`text-xs px-4 py-2 rounded-full font-medium transition-colors ${
-                          replyText.trim() 
-                            ? 'bg-blue-500 text-white hover:bg-blue-600' 
+                          replyText.trim()
+                            ? 'bg-blue-500 text-white hover:bg-blue-600'
                             : 'bg-gray-200 text-gray-500 cursor-not-allowed'
                         }`}
                       >
@@ -248,19 +292,22 @@ const Post = ({ post }: PostProps) => {
 
       {/* Comment Input */}
       <div className="px-4 pb-4 border-t border-gray-100">
-        <form onSubmit={handleComment} className="flex gap-3 items-center pt-3">
+        <form
+          onSubmit={handleComment}
+          className="flex gap-3 items-center pt-3"
+        >
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-xs">
             {user?.username?.[0]?.toUpperCase() || 'U'}
           </div>
-          <input 
-            value={comment} 
-            onChange={(e) => setComment(e.target.value)} 
-            placeholder="Add a comment..." 
+          <input
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="Add a comment..."
             className="flex-1 border-none outline-none text-sm py-2 px-3 bg-gray-50 rounded-full focus:bg-white focus:ring-2 focus:ring-blue-200 transition-all"
           />
           {comment.trim() && (
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="text-blue-500 hover:text-blue-600 font-semibold text-sm transition-colors"
             >
               Post

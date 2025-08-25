@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Home, MessageCircle, User, Settings, LogOut, Bell, Search, Users } from 'lucide-react';
 import { notificationsAPI } from '../../services/api';
-import socket from '../../services/socket';
+// import socket from '../../services/socket';
 
 interface NavbarProps {
   isAuthenticated: boolean;

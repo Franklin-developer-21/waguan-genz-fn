@@ -6,7 +6,7 @@ import Sidebar from '../Sidebar/Sidebar';
 import UserSuggestions from '../UserSuggestions/UserSuggestions';
 import Stories from '../Stories/Stories';
 import { postsAPI } from '../../services/api';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import type{ Post as PostType } from '../../types';
 
 const Feed = () => {

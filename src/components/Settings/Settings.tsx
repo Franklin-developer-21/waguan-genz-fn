@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Settings as SettingsIcon, User, Bell, Shield, Moon, Globe, LogOut, ChevronRight } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
 const Settings = () => {
@@ -131,7 +131,7 @@ const Settings = () => {
                       <span className="font-medium text-gray-800">{item.label}</span>
                     </div>
                     
-                    {item.hasArrow && (
+                    {'hasArrow' in item && item.hasArrow && (
                       <button
                         onClick={item.action}
                         className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -140,7 +140,7 @@ const Settings = () => {
                       </button>
                     )}
                     
-                    {item.toggle !== undefined && (
+                    {'toggle' in item && item.toggle !== undefined && (
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
                           type="checkbox"

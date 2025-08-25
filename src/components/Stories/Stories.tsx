@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Plus, X } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 
 interface Story {
   _id: string;
@@ -41,6 +41,20 @@ const Stories = () => {
         reader.onload = () => resolve(reader.result as string);
         reader.readAsDataURL(uploadData.image!);
       });
+      
+      // Create new story object
+      const newStory: Story = {
+        _id: Date.now().toString(),
+        user: {
+          _id: user?.id || '',
+          username: user?.username || 'Unknown'
+        },
+        image: base64Image,
+        createdAt: new Date().toISOString()
+      };
+      
+      // Add to stories list
+      setStories(prev => [newStory, ...prev]);
       
       // TODO: Add story API call
       // await storiesAPI.createStory({ image: base64Image });

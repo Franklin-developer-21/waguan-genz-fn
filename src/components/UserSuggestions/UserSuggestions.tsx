@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { UserPlus, X } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 import { usersAPI } from '../../services/api';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 
 interface SuggestedUser {
   _id: string;
@@ -53,9 +53,9 @@ const UserSuggestions = () => {
     }
   };
 
-  const handleDismiss = (userId: string) => {
-    setSuggestions(prev => prev.filter(u => u._id !== userId));
-  };
+  // const handleDismiss = (userId: string) => {
+  //   setSuggestions(prev => prev.filter(u => u._id !== userId));
+  // };
 
   if (loading) {
     return (

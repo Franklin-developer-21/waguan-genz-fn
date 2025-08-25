@@ -195,8 +195,8 @@ const ForgotPassword = () => {
               transition: 'transform 0.2s',
               marginBottom: '20px'
             }}
-            onMouseEnter={(e) => !isLoading && (e.target.style.transform = 'translateY(-2px)')}
-            onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
+            onMouseEnter={(e) => !isLoading && ((e.target as HTMLElement).style.transform = 'translateY(-2px)')}
+            onMouseLeave={(e) => ((e.target as HTMLElement).style.transform = 'translateY(0)')}
           >
             {isLoading ? 'Sending...' : (
               <>
