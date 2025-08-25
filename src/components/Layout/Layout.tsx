@@ -14,14 +14,14 @@ const Layout = ({ children }: LayoutProps) => {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <Sidebar />
       </div>
       
       {/* Main Content */}
-      <div className="flex-1 lg:ml-64">
+      <div className="flex-1 lg:ml-64 overflow-hidden">
         {children}
       </div>
     </div>

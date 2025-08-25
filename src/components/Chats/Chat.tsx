@@ -421,7 +421,7 @@ function Chat() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 relative overflow-hidden">
+    <div className="flex h-full bg-gray-50 relative overflow-hidden">
       {/* Chat Sidebar */}
       <div 
         className={`bg-white border-r border-gray-200 flex-col transition-all duration-300 ease-in-out
@@ -585,7 +585,7 @@ function Chat() {
             </div>
 
             {/* Message Input */}
-            <div className="p-3 md:p-5 pb-16 md:pb-5 border-t border-gray-200 bg-white safe-area-pb">
+            <div className="p-3 md:p-5 pb-20 md:pb-5 border-t border-gray-200 bg-white">
               {/* Sticker Picker */}
               {showStickers && (
                 <div className="mb-3 p-3 bg-gray-50 rounded-2xl">
