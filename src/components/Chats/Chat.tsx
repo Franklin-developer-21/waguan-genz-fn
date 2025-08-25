@@ -78,10 +78,10 @@ function Chat() {
   }, []);
 
   useEffect(() => {
-    // Identify user to socket server
+    // When user connects, emit userOnline
     if (user) {
-      socket.emit('identify', user.id);
-      console.log('Identifying user to socket:', user.id);
+      socket.emit('userOnline', user.id);
+      console.log('User online:', user.id);
     }
     
     if (selectedChat && user) {
@@ -201,12 +201,19 @@ function Chat() {
       setShowCall(false);
     });
 
+    socket.on('callFailed', ({ message }) => {
+      console.log('Call failed:', message);
+      setShowCallModal(false);
+      alert(`Call failed: ${message}`);
+    });
+
     return () => {
       socket.off('receiveMessage');
       socket.off('callUser');
       socket.off('callAccepted');
       socket.off('callRejected');
       socket.off('callEnded');
+      socket.off('callFailed');
     };
   }, [selectedChat, user]);
 
