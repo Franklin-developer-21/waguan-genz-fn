@@ -72,10 +72,9 @@ function Chat() {
 
   useEffect(() => {
     if (selectedChat && user) {
-      fetchMessages(selectedChat.id);
-      
       // Create consistent room ID for both users
       const roomId = [user.id, selectedChat.id].sort().join('-');
+      fetchMessages(roomId);
       socket.emit('joinChat', roomId);
       console.log('Joining chat room:', roomId);
       
@@ -198,10 +197,11 @@ function Chat() {
     }
   };
 
-  const fetchMessages = async (chatId: string) => {
+  const fetchMessages = async (roomId: string) => {
     setLoading(true);
     try {
-      const response = await messagesAPI.getMessages(chatId);
+      const response = await messagesAPI.getMessages(roomId);
+      console.log('Fetched messages for room:', roomId, response);
       const formattedMessages = response.data.map((msg: any) => ({
         id: msg._id,
         text: msg.text,
@@ -220,8 +220,9 @@ function Chat() {
     if (!message.trim() || !selectedChat || !user) return;
     
     try {
-      // Create the message via API
-      const response = await messagesAPI.createMessage(selectedChat.id, message);
+      // Create the message via API with consistent room ID
+      const roomId = [user.id, selectedChat.id].sort().join('-');
+      const response = await messagesAPI.createMessage(roomId, message);
       
       // Add the message to the UI immediately from the API response
       const newMessage = {
@@ -233,9 +234,6 @@ function Chat() {
       
       setMessages(prev => [...prev, newMessage]);
       setMessage('');
-      
-      // Emit the socket event for other users with consistent room ID
-      const roomId = [user.id, selectedChat.id].sort().join('-');
       socket.emit('sendMessage', {
         chatId: roomId,
         userId: user.id,
