@@ -44,6 +44,8 @@ function Chat() {
   const [callModalType, setCallModalType] = useState<'incoming' | 'outgoing'>('outgoing');
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
   const [showSidebar, setShowSidebar] = useState(true);
+  const [unreadCounts, setUnreadCounts] = useState<{[key: string]: number}>({});
+  const [lastMessages, setLastMessages] = useState<{[key: string]: string}>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom of messages
@@ -83,6 +85,12 @@ function Chat() {
       socket.emit('joinChat', chatId);
       console.log('Joining chat room:', chatId);
       
+      // Clear unread count for selected chat
+      setUnreadCounts(prev => ({
+        ...prev,
+        [selectedChat.id]: 0
+      }));
+      
       // On mobile, hide sidebar when chat is selected
       if (window.innerWidth < 768) {
         setShowSidebar(false);
@@ -104,6 +112,21 @@ function Chat() {
               sender: 'other'
             };
             console.log('Adding message from other user:', formattedMessage);
+            
+            // Update unread count if not in current chat
+            if (!selectedChat || selectedChat.id !== newMessage.userId) {
+              setUnreadCounts(prev => ({
+                ...prev,
+                [newMessage.userId]: (prev[newMessage.userId] || 0) + 1
+              }));
+            }
+            
+            // Update last message for this user
+            setLastMessages(prev => ({
+              ...prev,
+              [newMessage.userId]: newMessage.text
+            }));
+            
             return [...prev, formattedMessage];
           }
           return prev;
@@ -186,9 +209,9 @@ function Chat() {
         id: u._id,
         name: u.username,
         avatar: u.username.substring(0, 2).toUpperCase(),
-        lastMessage: 'Start a conversation',
+        lastMessage: lastMessages[u._id] || 'Start a conversation',
         timestamp: 'now',
-        unread: 0,
+        unread: unreadCounts[u._id] || 0,
         online: u.isActive || false
       }));
       setFollowedUsers(chatUsers);
@@ -279,6 +302,13 @@ function Chat() {
       };
       
       setMessages(prev => [...prev, newMessage]);
+      
+      // Update last message for this chat
+      setLastMessages(prev => ({
+        ...prev,
+        [selectedChat.id]: message
+      }));
+      
       setMessage('');
       
       // Emit the socket event for other users
