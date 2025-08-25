@@ -78,6 +78,12 @@ function Chat() {
   }, []);
 
   useEffect(() => {
+    // Identify user to socket server
+    if (user) {
+      socket.emit('identify', user.id);
+      console.log('Identifying user to socket:', user.id);
+    }
+    
     if (selectedChat && user) {
       // Create consistent chat ID for both users
       const chatId = generateChatId(user.id, selectedChat.id);
