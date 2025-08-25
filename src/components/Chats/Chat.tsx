@@ -200,6 +200,7 @@ function Chat() {
     setLoading(true);
     try {
       const response = await messagesAPI.getMessages(chatId);
+      console.log('Fetched messages:', response);
       const formattedMessages = response.data.map((msg: any) => ({
         id: msg._id,
         text: msg.text,
