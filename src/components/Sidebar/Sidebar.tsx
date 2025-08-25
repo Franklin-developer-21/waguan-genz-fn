@@ -143,43 +143,74 @@ const Sidebar = () => {
       </div>
       </div>
       
-      {/* Mobile Bottom Navigation */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-30">
-        <div className="flex justify-around py-2">
-          {navItems.slice(0, 4).map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
-                isActive(item.path)
-                  ? 'text-blue-600'
-                  : 'text-gray-600'
-              }`}
-            >
-              <item.icon size={20} />
-              <span className="text-xs mt-1">{item.label}</span>
-              {item.path === '/notifications' && notificationCount > 0 && (
-                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                  {notificationCount > 9 ? '9+' : notificationCount}
-                </div>
-              )}
-              {item.path === '/chat' && messageCount > 0 && (
-                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                  {messageCount > 9 ? '9+' : messageCount}
-                </div>
-              )}
-            </Link>
-          ))}
+      {/* Mobile Bottom Navigation - Instagram Style */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-30 safe-area-pb">
+        <div className="flex justify-around items-center px-2 py-1">
+          {/* Home */}
+          <Link
+            to="/"
+            className="flex flex-col items-center justify-center p-3 transition-colors"
+          >
+            <Home 
+              size={24} 
+              className={isActive('/') ? 'text-black' : 'text-gray-400'}
+              fill={isActive('/') ? 'currentColor' : 'none'}
+            />
+          </Link>
+          
+          {/* Discover */}
+          <Link
+            to="/users"
+            className="flex flex-col items-center justify-center p-3 transition-colors"
+          >
+            <Users 
+              size={24} 
+              className={isActive('/users') ? 'text-black' : 'text-gray-400'}
+              fill={isActive('/users') ? 'currentColor' : 'none'}
+            />
+          </Link>
+          
+          {/* Create Post */}
+          <Link
+            to="/create-post"
+            className="flex flex-col items-center justify-center p-3 transition-colors"
+          >
+            <div className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
+              isActive('/create-post') ? 'border-black' : 'border-gray-400'
+            }`}>
+              <Plus size={16} className={isActive('/create-post') ? 'text-black' : 'text-gray-400'} />
+            </div>
+          </Link>
+          
+          {/* Messages */}
+          <Link
+            to="/chat"
+            className="flex flex-col items-center justify-center p-3 transition-colors relative"
+          >
+            <MessageCircle 
+              size={24} 
+              className={isActive('/chat') ? 'text-black' : 'text-gray-400'}
+              fill={isActive('/chat') ? 'currentColor' : 'none'}
+            />
+            {messageCount > 0 && (
+              <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                {messageCount > 9 ? '9+' : messageCount}
+              </div>
+            )}
+          </Link>
+          
+          {/* Profile */}
           <Link
             to="/profile"
-            className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
-              isActive('/profile')
-                ? 'text-blue-600'
-                : 'text-gray-600'
-            }`}
+            className="flex flex-col items-center justify-center p-3 transition-colors"
           >
-            <User size={20} />
-            <span className="text-xs mt-1">Profile</span>
+            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs font-bold ${
+              isActive('/profile') 
+                ? 'border-black bg-black text-white' 
+                : 'border-gray-400 bg-gradient-to-br from-blue-500 to-blue-600 text-white'
+            }`}>
+              {user?.username?.[0]?.toUpperCase() || 'U'}
+            </div>
           </Link>
         </div>
       </div>
