@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Home, MessageCircle, User, Settings, LogOut, Bell, Search, Users } from 'lucide-react';
+import { Home, MessageCircle, User, Settings, LogOut, Bell, Search, Users, Plus } from 'lucide-react';
 import { notificationsAPI } from '../../services/api';
 // import socket from '../../services/socket';
 
@@ -103,14 +103,12 @@ const Navbar = ({ isAuthenticated, user, onLogout }: NavbarProps) => {
           />
         </div>
 
-        {/* Mobile menu button */}
+        {/* Mobile search button */}
         <button
           onClick={() => setShowMobileMenu(!showMobileMenu)}
           className="md:hidden p-2 rounded-lg hover:bg-gray-100"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
+          <Search size={20} />
         </button>
 
         <div className="hidden md:flex items-center gap-3 lg:gap-5">
@@ -207,11 +205,11 @@ const Navbar = ({ isAuthenticated, user, onLogout }: NavbarProps) => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Search Menu */}
         {showMobileMenu && (
           <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-gray-200 shadow-lg">
-            <div className="px-3 py-4 space-y-2">
-              <div className="relative mb-4">
+            <div className="px-3 py-4">
+              <div className="relative">
                 <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
                 <input
                   type="text"
@@ -219,51 +217,77 @@ const Navbar = ({ isAuthenticated, user, onLogout }: NavbarProps) => {
                   className="w-full py-2 pl-10 pr-4 border border-gray-200 rounded-full text-sm outline-none bg-gray-50 focus:border-blue-500 focus:bg-white transition-all"
                 />
               </div>
-              
-              <Link
-                to="/"
-                onClick={() => setShowMobileMenu(false)}
-                className={`flex items-center gap-3 px-3 py-3 ${isActive('/') ? 'text-blue-500 bg-blue-50' : 'text-gray-600'} no-underline rounded-lg transition-all font-medium`}
-              >
-                <Home size={20} />
-                <span>Home</span>
-              </Link>
-              
-              <Link
-                to="/users"
-                onClick={() => setShowMobileMenu(false)}
-                className={`flex items-center gap-3 px-3 py-3 ${isActive('/users') ? 'text-blue-500 bg-blue-50' : 'text-gray-600'} no-underline rounded-lg transition-all font-medium`}
-              >
-                <Users size={20} />
-                <span>People</span>
-              </Link>
-              
-              <Link
-                to="/chat"
-                onClick={() => setShowMobileMenu(false)}
-                className={`flex items-center gap-3 px-3 py-3 ${isActive('/chat') ? 'text-blue-500 bg-blue-50' : 'text-gray-600'} no-underline rounded-lg transition-all font-medium relative`}
-              >
-                <MessageCircle size={20} />
-                <span>Messages</span>
-                <div className="w-2 h-2 bg-red-500 rounded-full" />
-              </Link>
-              
-              <Link
-                to="/notifications"
-                onClick={() => setShowMobileMenu(false)}
-                className={`flex items-center gap-3 px-3 py-3 ${isActive('/notifications') ? 'text-blue-500 bg-blue-50' : 'text-gray-600'} no-underline rounded-lg transition-all font-medium relative`}
-              >
-                <Bell size={20} />
-                <span>Notifications</span>
-                {unreadCount > 0 && (
-                  <div className="w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs font-semibold ml-auto">
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </div>
-                )}
-              </Link>
             </div>
           </div>
         )}
+      </div>
+      
+      {/* Mobile Bottom Navigation - Instagram Style */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-50 safe-area-pb">
+        <div className="flex justify-around items-center px-2 py-1">
+          {/* Home */}
+          <Link
+            to="/"
+            className="flex flex-col items-center justify-center p-3 transition-colors"
+          >
+            <Home 
+              size={24} 
+              className={isActive('/') ? 'text-black' : 'text-gray-400'}
+              fill={isActive('/') ? 'currentColor' : 'none'}
+            />
+          </Link>
+          
+          {/* Discover */}
+          <Link
+            to="/users"
+            className="flex flex-col items-center justify-center p-3 transition-colors"
+          >
+            <Users 
+              size={24} 
+              className={isActive('/users') ? 'text-black' : 'text-gray-400'}
+              fill={isActive('/users') ? 'currentColor' : 'none'}
+            />
+          </Link>
+          
+          {/* Create Post */}
+          <Link
+            to="/create-post"
+            className="flex flex-col items-center justify-center p-3 transition-colors"
+          >
+            <div className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
+              isActive('/create-post') ? 'border-black' : 'border-gray-400'
+            }`}>
+              <Plus size={16} className={isActive('/create-post') ? 'text-black' : 'text-gray-400'} />
+            </div>
+          </Link>
+          
+          {/* Messages */}
+          <Link
+            to="/chat"
+            className="flex flex-col items-center justify-center p-3 transition-colors relative"
+          >
+            <MessageCircle 
+              size={24} 
+              className={isActive('/chat') ? 'text-black' : 'text-gray-400'}
+              fill={isActive('/chat') ? 'currentColor' : 'none'}
+            />
+            <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+          </Link>
+          
+          {/* Profile */}
+          <Link
+            to="/profile"
+            className="flex flex-col items-center justify-center p-3 transition-colors"
+          >
+            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs font-bold ${
+              isActive('/profile') 
+                ? 'border-black bg-black text-white' 
+                : 'border-gray-400 bg-gradient-to-br from-blue-500 to-blue-600 text-white'
+            }`}>
+              {user?.username?.[0]?.toUpperCase() || 'U'}
+            </div>
+          </Link>
+        </div>
       </div>
     </nav>
   );

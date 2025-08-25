@@ -103,7 +103,6 @@ const Users = () => {
                       {userItem.username}
                     </h3>
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="text-gray-600 text-sm">{userItem.email}</p>
                       <span className={`text-xs px-2 py-1 rounded-full ${userItem.isActive ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'}`}>
                         {userItem.isActive ? 'Online' : 'Offline'}
                       </span>
