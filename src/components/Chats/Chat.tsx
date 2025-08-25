@@ -92,21 +92,23 @@ function Chat() {
     socket.on('receiveMessage', (newMessage) => {
       console.log('Received message:', newMessage);
       
-      // Check if message already exists to prevent duplicates
-      setMessages(prev => {
-        const messageExists = prev.some(msg => msg.id === newMessage._id);
-        if (!messageExists) {
-          const formattedMessage: Message = {
-            id: newMessage._id || Date.now().toString(),
-            text: newMessage.text,
-            timestamp: new Date(newMessage.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            sender: newMessage.userId === user?.id ? 'me' : 'other'
-          };
-          console.log('Adding message to UI:', formattedMessage);
-          return [...prev, formattedMessage];
-        }
-        return prev;
-      });
+      // Only add messages from other users to prevent duplicates
+      if (newMessage.userId !== user?.id) {
+        setMessages(prev => {
+          const messageExists = prev.some(msg => msg.id === newMessage._id);
+          if (!messageExists) {
+            const formattedMessage: Message = {
+              id: newMessage._id || Date.now().toString(),
+              text: newMessage.text,
+              timestamp: new Date(newMessage.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              sender: 'other'
+            };
+            console.log('Adding message from other user:', formattedMessage);
+            return [...prev, formattedMessage];
+          }
+          return prev;
+        });
+      }
       
       // Play message sound for received messages (only from others)
       if (newMessage.userId !== user?.id) {
