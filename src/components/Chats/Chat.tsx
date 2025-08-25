@@ -203,13 +203,40 @@ function Chat() {
   const fetchMessages = async (chatId: string) => {
     setLoading(true);
     try {
-      const response = await messagesAPI.getMessages(chatId);
+      // Try new format first
+      let response = await messagesAPI.getMessages(chatId);
       console.log('Fetched messages for chat:', chatId, response.data);
-      const formattedMessages = response.data.map((msg: any) => ({
+      
+      // If no messages found with new format, try old formats (individual user IDs)
+      if (response.data.length === 0 && selectedChat && user) {
+        console.log('No messages with new format, trying old formats...');
+        try {
+          const response1 = await messagesAPI.getMessages(user.id);
+          const response2 = await messagesAPI.getMessages(selectedChat.id);
+          const combinedMessages = [...response1.data, ...response2.data]
+            .filter((msg: any) => 
+              (msg.userId === user.id && msg.chatId === selectedChat.id) ||
+              (msg.userId === selectedChat.id && msg.chatId === user.id)
+            )
+            .sort((a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+          response = { 
+            data: combinedMessages,
+            status: 200,
+            statusText: 'OK',
+            headers: {},
+            config: {} as any
+          } as any;
+          console.log('Found messages with old format:', combinedMessages);
+        } catch (oldFormatError) {
+          console.log('Old format also failed:', oldFormatError);
+        }
+      }
+      
+      const formattedMessages: Message[] = response.data.map((msg: any) => ({
         id: msg._id,
         text: msg.text,
         timestamp: new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        sender: msg.userId === user?.id ? 'me' : 'other'
+        sender: msg.userId === user?.id ? 'me' as const : 'other' as const
       }));
       setMessages(formattedMessages);
     } catch (error) {
