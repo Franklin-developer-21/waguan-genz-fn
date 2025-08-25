@@ -72,10 +72,9 @@ function Chat() {
 
   useEffect(() => {
     if (selectedChat && user) {
-      fetchMessages(selectedChat.id);
-      
       // Create consistent room ID for both users
       const roomId = [user.id, selectedChat.id].sort().join('-');
+      fetchMessages(roomId);
       socket.emit('joinChat', roomId);
       console.log('Joining chat room:', roomId);
       
@@ -196,11 +195,11 @@ function Chat() {
     }
   };
 
-  const fetchMessages = async (chatId: string) => {
+  const fetchMessages = async (roomId: string) => {
     setLoading(true);
     try {
-      const response = await messagesAPI.getMessages(chatId);
-      console.log('Fetched messages:', response);
+      const response = await messagesAPI.getMessages(roomId);
+      console.log('Fetched messages for room:', roomId, response.data);
       const formattedMessages = response.data.map((msg: any) => ({
         id: msg._id,
         text: msg.text,
@@ -219,8 +218,9 @@ function Chat() {
     if (!message.trim() || !selectedChat || !user) return;
     
     try {
-      // Create the message via API
-      const response = await messagesAPI.createMessage(selectedChat.id, message);
+      // Create the message via API with consistent room ID
+      const roomId = [user.id, selectedChat.id].sort().join('-');
+      const response = await messagesAPI.createMessage(roomId, message);
       
       // Add the message to the UI immediately from the API response
       const newMessage = {
