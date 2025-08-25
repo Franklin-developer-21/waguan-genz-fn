@@ -287,6 +287,18 @@ const Navbar = ({ isAuthenticated, user, onLogout }: NavbarProps) => {
               {user?.username?.[0]?.toUpperCase() || 'U'}
             </div>
           </Link>
+          
+          {/* Settings */}
+          <Link
+            to="/settings"
+            className="flex flex-col items-center justify-center p-3 transition-colors"
+          >
+            <Settings 
+              size={24} 
+              className={isActive('/settings') ? 'text-black' : 'text-gray-400'}
+              fill={isActive('/settings') ? 'currentColor' : 'none'}
+            />
+          </Link>
         </div>
       </div>
     </nav>
