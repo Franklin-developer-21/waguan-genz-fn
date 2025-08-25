@@ -92,7 +92,7 @@ function Chat() {
       setMessages(prev => {
         const messageExists = prev.some(msg => msg.id === newMessage._id);
         if (!messageExists) {
-          const formattedMessage = {
+          const formattedMessage: Message = {
             id: newMessage._id || Date.now().toString(),
             text: newMessage.text,
             timestamp: new Date(newMessage.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
