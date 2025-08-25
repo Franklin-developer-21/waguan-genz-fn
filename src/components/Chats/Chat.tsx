@@ -203,6 +203,7 @@ function Chat() {
   }, [selectedChat, user]);
 
   const fetchFollowedUsers = async () => {
+    console.log("last message",lastMessages)
     try {
       const response = await usersAPI.getFollowing();
       const chatUsers = response.data.map((u: any) => ({

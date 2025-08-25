@@ -1,14 +1,44 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, MessageCircle, Users, Bell, Settings, User, Plus } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { notificationsAPI } from '../../services/api';
 
 const Sidebar = () => {
   const { user } = useAuth();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [messageCount, setMessageCount] = useState(0);
 
   const isActive = (path: string) => location.pathname === path;
+
+  useEffect(() => {
+    if (user) {
+      fetchNotificationCount();
+      fetchMessageCount();
+    }
+  }, [user]);
+
+  const fetchNotificationCount = async () => {
+    try {
+      const response = await notificationsAPI.getNotifications();
+      const unread = response.data.filter((n: any) => !n.read).length;
+      setNotificationCount(unread);
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+    }
+  };
+
+  const fetchMessageCount = async () => {
+    try {
+      // This would need to be implemented based on your message API
+      // For now, setting a placeholder count
+      setMessageCount(0); // Replace with actual unread message count
+    } catch (error) {
+      console.error('Failed to fetch message count:', error);
+    }
+  };
 
   const navItems = [
     { path: '/', icon: Home, label: 'Home' },
@@ -66,11 +96,15 @@ const Sidebar = () => {
             >
               <item.icon size={24} />
               <span className="text-base">{item.label}</span>
-              {item.path === '/notifications' && (
-                <div className="w-2 h-2 bg-red-500 rounded-full ml-auto" />
+              {item.path === '/notifications' && notificationCount > 0 && (
+                <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full ml-auto min-w-[20px] text-center">
+                  {notificationCount > 99 ? '99+' : notificationCount}
+                </div>
               )}
-              {item.path === '/chat' && (
-                <div className="w-2 h-2 bg-red-500 rounded-full ml-auto" />
+              {item.path === '/chat' && messageCount > 0 && (
+                <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full ml-auto min-w-[20px] text-center">
+                  {messageCount > 99 ? '99+' : messageCount}
+                </div>
               )}
             </Link>
           ))}
