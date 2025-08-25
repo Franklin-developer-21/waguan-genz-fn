@@ -46,6 +46,7 @@ function Chat() {
   const [showSidebar, setShowSidebar] = useState(true);
   const [unreadCounts, setUnreadCounts] = useState<{[key: string]: number}>({});
   const [lastMessages, setLastMessages] = useState<{[key: string]: string}>({});
+  const [incomingCallData, setIncomingCallData] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom of messages
@@ -156,6 +157,7 @@ function Chat() {
     socket.on('callUser', (data) => {
       console.log('Received callUser event:', data);
       const { callType } = data;
+      setIncomingCallData(data); // Store caller data
       setCallType(callType);
       setCallModalType('incoming');
       setShowCallModal(true);
@@ -600,7 +602,10 @@ function Chat() {
               currentAudio.currentTime = 0;
               setCurrentAudio(null);
             }
-            socket.emit('answerCall', { signal: null, to: selectedChat.id });
+            // Use the caller's ID from incoming call data
+            const callerId = incomingCallData?.from || selectedChat.id;
+            socket.emit('answerCall', { signal: null, to: callerId });
+            console.log('Accepting call from:', callerId);
             setShowCallModal(false);
             setShowCall(true);
           }}
@@ -610,7 +615,10 @@ function Chat() {
               currentAudio.currentTime = 0;
               setCurrentAudio(null);
             }
-            socket.emit('rejectCall', { to: selectedChat.id });
+            // Use the caller's ID from incoming call data
+            const callerId = incomingCallData?.from || selectedChat.id;
+            socket.emit('rejectCall', { to: callerId });
+            console.log('Rejecting call from:', callerId);
             setShowCallModal(false);
           }}
         />
