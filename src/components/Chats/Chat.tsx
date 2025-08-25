@@ -82,7 +82,7 @@ function Chat() {
     // When user connects, emit userOnline
     if (user) {
       socket.emit('userOnline', user.id);
-      console.log('User online:', user.id);
+      console.log('User online - User ID:', user.id, 'Socket ID:', socket.id);
     }
     
     if (selectedChat && user) {
@@ -176,7 +176,8 @@ function Chat() {
       setCurrentAudio(audio);
     });
 
-    socket.on('callAccepted', () => {
+    socket.on('callAccepted', (data) => {
+      console.log('Received callAccepted event:', data);
       if (currentAudio) {
         try {
           currentAudio.pause();
@@ -605,7 +606,8 @@ function Chat() {
             // Use the caller's ID from incoming call data
             const callerId = incomingCallData?.from || selectedChat.id;
             socket.emit('answerCall', { signal: null, to: callerId });
-            console.log('Accepting call from:', callerId);
+            console.log('Emitting answerCall event to user ID:', callerId);
+            console.log('My socket ID:', socket.id);
             setShowCallModal(false);
             setShowCall(true);
           }}
