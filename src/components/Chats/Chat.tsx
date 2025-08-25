@@ -71,9 +71,13 @@ function Chat() {
   }, []);
 
   useEffect(() => {
-    if (selectedChat) {
+    if (selectedChat && user) {
       fetchMessages(selectedChat.id);
-      socket.emit('joinChat', selectedChat.id);
+      
+      // Create consistent room ID for both users
+      const roomId = [user.id, selectedChat.id].sort().join('-');
+      socket.emit('joinChat', roomId);
+      console.log('Joining chat room:', roomId);
       
       // On mobile, hide sidebar when chat is selected
       if (window.innerWidth < 768) {
@@ -82,16 +86,20 @@ function Chat() {
     }
 
     socket.on('receiveMessage', (newMessage) => {
+      console.log('Received message:', newMessage);
+      
       // Check if message already exists to prevent duplicates
       setMessages(prev => {
         const messageExists = prev.some(msg => msg.id === newMessage._id);
-        if (!messageExists && newMessage.userId !== user?.id) {
-          return [...prev, {
-            id: newMessage._id,
+        if (!messageExists) {
+          const formattedMessage: Message = {
+            id: newMessage._id || Date.now().toString(),
             text: newMessage.text,
             timestamp: new Date(newMessage.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             sender: newMessage.userId === user?.id ? 'me' : 'other'
-          }];
+          };
+          console.log('Adding message to UI:', formattedMessage);
+          return [...prev, formattedMessage];
         }
         return prev;
       });
@@ -224,13 +232,15 @@ function Chat() {
       setMessages(prev => [...prev, newMessage]);
       setMessage('');
       
-      // Emit the socket event for other users
+      // Emit the socket event for other users with consistent room ID
+      const roomId = [user.id, selectedChat.id].sort().join('-');
       socket.emit('sendMessage', {
-        chatId: selectedChat.id,
+        chatId: roomId,
         userId: user.id,
         text: message,
         timestamp: new Date()
       });
+      console.log('Sending message to room:', roomId);
     } catch (error) {
       console.error('Failed to send message:', error);
     }
