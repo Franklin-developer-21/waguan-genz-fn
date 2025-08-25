@@ -147,7 +147,9 @@ function Chat() {
       }
     });
 
-    socket.on('callUser', ({ callType }) => {
+    socket.on('callUser', (data) => {
+      console.log('Received callUser event:', data);
+      const { callType } = data;
       setCallType(callType);
       setCallModalType('incoming');
       setShowCallModal(true);
@@ -231,8 +233,6 @@ function Chat() {
     try {
       // Try new format first
       let response = await messagesAPI.getMessages(chatId);
-      console.log('Fetched messages for chat:', chatId, response.data);
-      
       // If no messages found with new format, try old formats (individual user IDs)
       if (response.data.length === 0 && selectedChat && user) {
         console.log('No messages with new format, trying old formats...');
@@ -337,6 +337,12 @@ function Chat() {
       socket.emit('callUser', {
         userToCall: selectedChat.id,
         signalData: null,
+        from: user.id,
+        name: user.username,
+        callType: type
+      });
+      console.log('Emitting callUser event:', {
+        userToCall: selectedChat.id,
         from: user.id,
         name: user.username,
         callType: type
