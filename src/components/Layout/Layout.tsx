@@ -21,7 +21,7 @@ const Layout = ({ children }: LayoutProps) => {
       </div>
       
       {/* Main Content */}
-      <div className="flex-1 lg:ml-64">
+      <div className="flex-1 lg:ml-6">
         {children}
       </div>
     </div>
