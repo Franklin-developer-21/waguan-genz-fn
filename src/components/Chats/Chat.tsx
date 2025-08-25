@@ -25,6 +25,11 @@ interface Message {
   sender: 'me' | 'other';
 }
 
+// Utility function to generate consistent chat ID
+const generateChatId = (userId1: string, userId2: string): string => {
+  return [userId1, userId2].sort().join('_');
+};
+
 function Chat() {
   const { user } = useAuth();
   const [followedUsers, setFollowedUsers] = useState<ChatUser[]>([]);
@@ -72,11 +77,11 @@ function Chat() {
 
   useEffect(() => {
     if (selectedChat && user) {
-      // Create consistent room ID for both users
-      const roomId = [user.id, selectedChat.id].sort().join('-');
-      fetchMessages(roomId);
-      socket.emit('joinChat', roomId);
-      console.log('Joining chat room:', roomId);
+      // Create consistent chat ID for both users
+      const chatId = generateChatId(user.id, selectedChat.id);
+      fetchMessages(chatId);
+      socket.emit('joinChat', chatId);
+      console.log('Joining chat room:', chatId);
       
       // On mobile, hide sidebar when chat is selected
       if (window.innerWidth < 768) {
@@ -195,11 +200,11 @@ function Chat() {
     }
   };
 
-  const fetchMessages = async (roomId: string) => {
+  const fetchMessages = async (chatId: string) => {
     setLoading(true);
     try {
-      const response = await messagesAPI.getMessages(roomId);
-      console.log('Fetched messages for room:', roomId, response.data);
+      const response = await messagesAPI.getMessages(chatId);
+      console.log('Fetched messages for chat:', chatId, response.data);
       const formattedMessages = response.data.map((msg: any) => ({
         id: msg._id,
         text: msg.text,
@@ -218,9 +223,9 @@ function Chat() {
     if (!message.trim() || !selectedChat || !user) return;
     
     try {
-      // Create the message via API with consistent room ID
-      const roomId = [user.id, selectedChat.id].sort().join('-');
-      const response = await messagesAPI.createMessage(roomId, message);
+      // Create the message via API with consistent chat ID
+      const chatId = generateChatId(user.id, selectedChat.id);
+      const response = await messagesAPI.createMessage(chatId, message);
       
       // Add the message to the UI immediately from the API response
       const newMessage = {
@@ -233,15 +238,14 @@ function Chat() {
       setMessages(prev => [...prev, newMessage]);
       setMessage('');
       
-      // Emit the socket event for other users with consistent room ID
-      const roomId = [user.id, selectedChat.id].sort().join('-');
+      // Emit the socket event for other users
       socket.emit('sendMessage', {
-        chatId: roomId,
+        chatId: chatId,
         userId: user.id,
         text: message,
         timestamp: new Date()
       });
-      console.log('Sending message to room:', roomId);
+      console.log('Sending message to chat:', chatId);
     } catch (error) {
       console.error('Failed to send message:', error);
     }
