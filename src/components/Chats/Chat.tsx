@@ -571,12 +571,12 @@ function Chat() {
                   {messages.map((msg) => (
                     <div
                       key={msg.id}
-                      className={`flex ${
+                      className={`flex flex-col pt-2 ${
                         msg.sender === "me" ? "justify-end" : "justify-start"
                       } mb-3 md:mb-4`}
                     >
                       <div
-                        className={`max-w-xs md:max-w-xl px-3 py-2 md:px-4 md:py-3 rounded-2xl shadow-sm ${
+                        className={`max-w-xs md:max-w-xl px-3 py-1 md:px-4 md:py-2 rounded-2xl shadow-sm ${
                           msg.sender === "me"
                             ? "bg-blue-500 text-white"
                             : "bg-white text-gray-800"
