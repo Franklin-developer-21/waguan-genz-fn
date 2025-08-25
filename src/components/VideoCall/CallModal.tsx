@@ -42,9 +42,16 @@ const CallModal = ({ type, isVideoCall, recipientName, onAccept, onDecline }: Ca
       }, 30000);
     }
 
-    // Play sound
+    // Play sound with proper error handling
     if (audioRef.current) {
-      audioRef.current.play().catch(console.error);
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((error) => {
+          if (error.name !== 'AbortError') {
+            console.error('Audio play failed:', error);
+          }
+        });
+      }
     }
 
     return () => {
@@ -52,8 +59,12 @@ const CallModal = ({ type, isVideoCall, recipientName, onAccept, onDecline }: Ca
       clearInterval(countdownInterval);
       clearTimeout(rejectTimer);
       if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
+        try {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        } catch (error) {
+          // Ignore errors when stopping audio
+        }
       }
     };
   }, [type, onDecline]);

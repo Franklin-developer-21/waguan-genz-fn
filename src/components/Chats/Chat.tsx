@@ -99,7 +99,14 @@ function Chat() {
       // Play message sound for received messages (only from others)
       if (newMessage.userId !== user?.id) {
         const audio = new Audio(messageSound);
-        audio.play().catch(console.error);
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((error) => {
+            if (error.name !== 'AbortError') {
+              console.error('Message sound failed:', error);
+            }
+          });
+        }
       }
     });
 
@@ -111,14 +118,25 @@ function Chat() {
       // Play ringing sound for incoming calls
       const audio = new Audio(ringing);
       audio.loop = true;
-      audio.play().catch(console.error);
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((error) => {
+          if (error.name !== 'AbortError') {
+            console.error('Ringing sound failed:', error);
+          }
+        });
+      }
       setCurrentAudio(audio);
     });
 
     socket.on('callAccepted', () => {
       if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
+        try {
+          currentAudio.pause();
+          currentAudio.currentTime = 0;
+        } catch (error) {
+          // Ignore errors when stopping audio
+        }
         setCurrentAudio(null);
       }
       setShowCallModal(false);
