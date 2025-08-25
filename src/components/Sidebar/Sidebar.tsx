@@ -142,6 +142,47 @@ const Sidebar = () => {
         </Link>
       </div>
       </div>
+      
+      {/* Mobile Bottom Navigation */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-30">
+        <div className="flex justify-around py-2">
+          {navItems.slice(0, 4).map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
+                isActive(item.path)
+                  ? 'text-blue-600'
+                  : 'text-gray-600'
+              }`}
+            >
+              <item.icon size={20} />
+              <span className="text-xs mt-1">{item.label}</span>
+              {item.path === '/notifications' && notificationCount > 0 && (
+                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
+                  {notificationCount > 9 ? '9+' : notificationCount}
+                </div>
+              )}
+              {item.path === '/chat' && messageCount > 0 && (
+                <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
+                  {messageCount > 9 ? '9+' : messageCount}
+                </div>
+              )}
+            </Link>
+          ))}
+          <Link
+            to="/profile"
+            className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
+              isActive('/profile')
+                ? 'text-blue-600'
+                : 'text-gray-600'
+            }`}
+          >
+            <User size={20} />
+            <span className="text-xs mt-1">Profile</span>
+          </Link>
+        </div>
+      </div>
     </>
   );
 };
