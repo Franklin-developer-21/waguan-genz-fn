@@ -213,11 +213,25 @@ function Chat() {
         try {
           const response1 = await messagesAPI.getMessages(user.id);
           const response2 = await messagesAPI.getMessages(selectedChat.id);
-          const combinedMessages = [...response1.data, ...response2.data]
-            .filter((msg: any) => 
-              (msg.userId === user.id && msg.chatId === selectedChat.id) ||
-              (msg.userId === selectedChat.id && msg.chatId === user.id)
-            )
+          // Get all messages where either user is involved
+          const allMessages = [...response1.data, ...response2.data];
+          console.log('All messages from both queries:', allMessages);
+          
+          const combinedMessages = allMessages
+            .filter((msg: any, index: number, array: any[]) => {
+              // Remove duplicates based on _id
+              const firstIndex = array.findIndex(m => m._id === msg._id);
+              if (firstIndex !== index) return false;
+              
+              // Include messages between these two users
+              const isConversationMessage = 
+                (msg.userId === user.id && msg.chatId === selectedChat.id) ||
+                (msg.userId === selectedChat.id && msg.chatId === user.id) ||
+                (msg.chatId === user.id && msg.userId === selectedChat.id) ||
+                (msg.chatId === selectedChat.id && msg.userId === user.id);
+              
+              return isConversationMessage;
+            })
             .sort((a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
           response = { 
             data: combinedMessages,
