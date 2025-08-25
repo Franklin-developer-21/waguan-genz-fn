@@ -72,9 +72,10 @@ function Chat() {
 
   useEffect(() => {
     if (selectedChat && user) {
+      fetchMessages(selectedChat.id);
+      
       // Create consistent room ID for both users
       const roomId = [user.id, selectedChat.id].sort().join('-');
-      fetchMessages(roomId);
       socket.emit('joinChat', roomId);
       console.log('Joining chat room:', roomId);
       
@@ -87,23 +88,21 @@ function Chat() {
     socket.on('receiveMessage', (newMessage) => {
       console.log('Received message:', newMessage);
       
-      // Only add messages from other users to prevent duplicates
-      if (newMessage.userId !== user?.id) {
-        setMessages(prev => {
-          const messageExists = prev.some(msg => msg.id === newMessage._id);
-          if (!messageExists) {
-            const formattedMessage: Message = {
-              id: newMessage._id || Date.now().toString(),
-              text: newMessage.text,
-              timestamp: new Date(newMessage.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              sender: 'other'
-            };
-            console.log('Adding message from other user:', formattedMessage);
-            return [...prev, formattedMessage];
-          }
-          return prev;
-        });
-      }
+      // Check if message already exists to prevent duplicates
+      setMessages(prev => {
+        const messageExists = prev.some(msg => msg.id === newMessage._id);
+        if (!messageExists) {
+          const formattedMessage = {
+            id: newMessage._id || Date.now().toString(),
+            text: newMessage.text,
+            timestamp: new Date(newMessage.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            sender: newMessage.userId === user?.id ? 'me' : 'other'
+          };
+          console.log('Adding message to UI:', formattedMessage);
+          return [...prev, formattedMessage];
+        }
+        return prev;
+      });
       
       // Play message sound for received messages (only from others)
       if (newMessage.userId !== user?.id) {
@@ -197,11 +196,10 @@ function Chat() {
     }
   };
 
-  const fetchMessages = async (roomId: string) => {
+  const fetchMessages = async (chatId: string) => {
     setLoading(true);
     try {
-      const response = await messagesAPI.getMessages(roomId);
-      console.log('Fetched messages for room:', roomId, response);
+      const response = await messagesAPI.getMessages(chatId);
       const formattedMessages = response.data.map((msg: any) => ({
         id: msg._id,
         text: msg.text,
@@ -220,9 +218,8 @@ function Chat() {
     if (!message.trim() || !selectedChat || !user) return;
     
     try {
-      // Create the message via API with consistent room ID
-      const roomId = [user.id, selectedChat.id].sort().join('-');
-      const response = await messagesAPI.createMessage(roomId, message);
+      // Create the message via API
+      const response = await messagesAPI.createMessage(selectedChat.id, message);
       
       // Add the message to the UI immediately from the API response
       const newMessage = {
@@ -234,6 +231,9 @@ function Chat() {
       
       setMessages(prev => [...prev, newMessage]);
       setMessage('');
+      
+      // Emit the socket event for other users with consistent room ID
+      const roomId = [user.id, selectedChat.id].sort().join('-');
       socket.emit('sendMessage', {
         chatId: roomId,
         userId: user.id,
