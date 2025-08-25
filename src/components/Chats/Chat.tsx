@@ -57,14 +57,7 @@ function Chat() {
     '🐶', '🐱', '🦄', '🐸', '🦋', '🌸', '🌈', '☀️'
   ];
 
-  // Auto-scroll to bottom of messages
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  // Removed auto-scroll to prevent keyboard interference
 
   useEffect(() => {
     fetchFollowedUsers();
