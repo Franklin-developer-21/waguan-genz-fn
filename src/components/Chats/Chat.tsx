@@ -61,33 +61,12 @@ function Chat() {
 
   useEffect(() => {
     fetchFollowedUsers();
-    
-    // Handle window resize for responsive behavior
-    const handleResize = () => {
-      if (window.innerWidth < 768) {
-        // On mobile, only show sidebar if no chat is selected
-        if (!selectedChat) {
-          setShowSidebar(true);
-        }
-      } else {
-        // On desktop, always show sidebar
-        setShowSidebar(true);
-      }
-    };
-    
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
   }, []);
 
   useEffect(() => {
     // When user connects, emit userOnline
     if (user) {
       socket.emit('userOnline', user.id);
-      console.log('User online - User ID:', user.id, 'Socket ID:', socket.id);
     }
     
     if (selectedChat && user) {
@@ -95,22 +74,15 @@ function Chat() {
       const chatId = generateChatId(user.id, selectedChat.id);
       fetchMessages(chatId);
       socket.emit('joinChat', chatId);
-      console.log('Joining chat room:', chatId);
       
       // Clear unread count for selected chat
       setUnreadCounts(prev => ({
         ...prev,
         [selectedChat.id]: 0
       }));
-      
-      // On mobile, hide sidebar when chat is selected
-      if (window.innerWidth < 768) {
-        setShowSidebar(false);
-      }
     }
 
     socket.on('receiveMessage', (newMessage) => {
-      console.log('Received message:', newMessage);
       
       // Only add messages from other users to prevent duplicates
       if (newMessage.userId !== user?.id) {
@@ -123,7 +95,6 @@ function Chat() {
               timestamp: new Date(newMessage.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
               sender: 'other'
             };
-            console.log('Adding message from other user:', formattedMessage);
             
             // Update unread count if not in current chat
             if (!selectedChat || selectedChat.id !== newMessage.userId) {
@@ -160,7 +131,6 @@ function Chat() {
     });
 
     socket.on('callUser', (data) => {
-      console.log('Received callUser event:', data);
       const { callType } = data;
       setIncomingCallData(data); // Store caller data
       setCallType(callType);
@@ -181,8 +151,7 @@ function Chat() {
       setCurrentAudio(audio);
     });
 
-    socket.on('callAccepted', (data) => {
-      console.log('Received callAccepted event:', data);
+    socket.on('callAccepted', () => {
       if (currentAudio) {
         try {
           currentAudio.pause();
@@ -210,7 +179,6 @@ function Chat() {
     });
 
     socket.on('callFailed', ({ message }) => {
-      console.log('Call failed:', message);
       setShowCallModal(false);
       alert(`Call failed: ${message}`);
     });
@@ -226,7 +194,6 @@ function Chat() {
   }, [selectedChat, user]);
 
   const fetchFollowedUsers = async () => {
-    console.log("last message",lastMessages)
     try {
       const response = await usersAPI.getFollowing();
       const chatUsers = response.data.map((u: any) => ({
@@ -256,13 +223,11 @@ function Chat() {
       let response = await messagesAPI.getMessages(chatId);
       // If no messages found with new format, try old formats (individual user IDs)
       if (response.data.length === 0 && selectedChat && user) {
-        console.log('No messages with new format, trying old formats...');
         try {
           const response1 = await messagesAPI.getMessages(user.id);
           const response2 = await messagesAPI.getMessages(selectedChat.id);
           // Get all messages where either user is involved
           const allMessages = [...response1.data, ...response2.data];
-          console.log('All messages from both queries:', allMessages);
           
           const combinedMessages = allMessages
             .filter((msg: any, index: number, array: any[]) => {
@@ -408,26 +373,20 @@ function Chat() {
 
   const handleSelectChat = (chat: ChatUser) => {
     setSelectedChat(chat);
-    if (window.innerWidth < 768) {
-      setShowSidebar(false);
-    }
+    setShowSidebar(false); // Always hide sidebar when selecting chat on mobile
   };
 
   const handleBackToChats = () => {
     setSelectedChat(null);
-    if (window.innerWidth < 768) {
-      setShowSidebar(true);
-    }
+    setShowSidebar(true); // Always show sidebar when going back
   };
 
   return (
     <div className="flex h-screen bg-gray-50 relative overflow-hidden" style={{ height: '100dvh' }}>
       {/* Chat Sidebar */}
       <div 
-        className={`bg-white border-r border-gray-200 flex-col transition-all duration-300 ease-in-out
-          ${showSidebar ? 'flex w-full md:w-80' : 'hidden md:flex md:w-80'} 
-          absolute md:relative h-full z-30`}
-        style={{ height: '100%', maxHeight: '100vh' }}
+        className={`bg-white border-r border-gray-200 flex-col transition-all duration-300 ease-in-out h-full z-30 absolute md:relative
+          ${showSidebar ? 'flex w-full md:w-80' : 'hidden md:flex md:w-80'}`}
       >
         {/* Search Header */}
         <div className="p-4 md:p-5 border-b border-gray-200">
@@ -500,7 +459,7 @@ function Chat() {
       </div>
 
       {/* Chat Area */}
-      <div className={`flex-1 flex-col bg-white ${selectedChat ? 'flex' : 'hidden md:flex'}`}>
+      <div className={`flex-1 flex-col bg-white ${selectedChat ? 'flex' : 'hidden md:flex'} ${showSidebar ? 'hidden md:flex' : ''}`}>
         {selectedChat ? (
           <>
             {/* Chat Header */}
