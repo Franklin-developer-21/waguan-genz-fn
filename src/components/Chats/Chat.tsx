@@ -48,6 +48,7 @@ function Chat() {
   const [lastMessages, setLastMessages] = useState<{[key: string]: string}>({});
   const [incomingCallData, setIncomingCallData] = useState<any>(null);
   const [showStickers, setShowStickers] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const stickers = [
@@ -201,7 +202,7 @@ function Chat() {
         name: u.username,
         avatar: u.username.substring(0, 2).toUpperCase(),
         lastMessage: lastMessages[u._id] || 'Start a conversation',
-        timestamp: 'now',
+        timestamp: u.isActive ? 'Online' : 'Offline',
         unread: unreadCounts[u._id] || 0,
         online: u.isActive || false
       }));
@@ -367,9 +368,6 @@ function Chat() {
     }
   };
 
-  const toggleSidebar = () => {
-    setShowSidebar(!showSidebar);
-  };
 
   const handleSelectChat = (chat: ChatUser) => {
     setSelectedChat(chat);
@@ -380,6 +378,11 @@ function Chat() {
     setSelectedChat(null);
     setShowSidebar(true); // Always show sidebar when going back
   };
+
+  const filteredUsers = followedUsers.filter(chat => 
+    chat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    chat.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="flex h-screen bg-gray-50 relative overflow-hidden" style={{ height: '100dvh' }}>
@@ -392,17 +395,13 @@ function Chat() {
         <div className="p-4 md:p-5 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl md:text-2xl font-semibold text-gray-800">Messages</h2>
-            <button 
-              onClick={toggleSidebar}
-              className="md:hidden p-1 rounded-md hover:bg-gray-100"
-            >
-              <ArrowLeft size={20} />
-            </button>
           </div>
           <div className="relative">
             <Search size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
             <input
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search conversations..."
               className="w-full py-2 md:py-3 pl-12 pr-4 border border-gray-200 rounded-full text-sm outline-none focus:border-blue-500 transition-colors"
             />
@@ -415,8 +414,8 @@ function Chat() {
             <div className="flex justify-center items-center h-32">
               <div className="text-gray-600">Loading chats...</div>
             </div>
-          ) : followedUsers.length > 0 ? (
-            followedUsers.map((chat) => (
+          ) : filteredUsers.length > 0 ? (
+            filteredUsers.map((chat) => (
             <div
               key={chat.id}
               onClick={() => handleSelectChat(chat)}
