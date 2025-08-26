@@ -223,8 +223,8 @@ const Navbar = ({ isAuthenticated, user, onLogout }: NavbarProps) => {
       </div>
       
       {/* Mobile Bottom Navigation - Instagram Style */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-50 safe-area-pb">
-        <div className="flex justify-around items-center px-2 py-1">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-40 pb-safe">
+        <div className="flex justify-around items-center px-2 py-2">
           {/* Home */}
           <Link
             to="/"

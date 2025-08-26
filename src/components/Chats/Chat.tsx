@@ -421,12 +421,13 @@ function Chat() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 relative overflow-hidden">
+    <div className="flex h-screen bg-gray-50 relative overflow-hidden" style={{ height: '100dvh' }}>
       {/* Chat Sidebar */}
       <div 
         className={`bg-white border-r border-gray-200 flex-col transition-all duration-300 ease-in-out
           ${showSidebar ? 'flex w-full md:w-80' : 'hidden md:flex md:w-80'} 
-          absolute md:relative h-full z-10`}
+          absolute md:relative h-full z-30`}
+        style={{ height: '100%', maxHeight: '100vh' }}
       >
         {/* Search Header */}
         <div className="p-4 md:p-5 border-b border-gray-200">
@@ -585,7 +586,7 @@ function Chat() {
             </div>
 
             {/* Message Input */}
-            <div className="p-3 md:p-5 pb-16 md:pb-5 border-t border-gray-200 bg-white safe-area-pb">
+            <div className="p-3 md:p-5 pb-20 md:pb-5 border-t border-gray-200 bg-white">
               {/* Sticker Picker */}
               {showStickers && (
                 <div className="mb-3 p-3 bg-gray-50 rounded-2xl">
@@ -618,6 +619,10 @@ function Chat() {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                  onTouchStart={(e) => e.stopPropagation()}
+                  onFocus={(e) => {
+                    e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }}
                   placeholder="Type a message..."
                   className="flex-1 bg-transparent border-none outline-none text-sm py-1 md:py-2 min-w-0"
                 />
