@@ -32,8 +32,15 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center p-5">
-      <div className="bg-white rounded-3xl p-10 w-full max-w-md shadow-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 flex items-center justify-center p-5 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0">
+        <div className="absolute top-20 left-20 w-72 h-72 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-white/5 rounded-full blur-3xl animate-pulse delay-500"></div>
+      </div>
+      
+      <div className="bg-white/95 backdrop-blur-lg rounded-3xl p-10 w-full max-w-md shadow-2xl border border-white/20 relative z-10">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
           <p className="text-gray-600 text-base">Sign in to your account</p>
@@ -53,7 +60,7 @@ const Login = () => {
                 })}
                 type="email"
                 placeholder="Enter your email"
-                className={`w-full py-4 pl-12 pr-4 border-2 ${errors.email ? 'border-red-500' : 'border-gray-200'} rounded-xl text-base outline-none focus:border-blue-500 transition-colors`}
+                className={`w-full py-4 pl-12 pr-4 border-2 ${errors.email ? 'border-red-500' : 'border-gray-200'} rounded-xl text-base outline-none focus:border-purple-500 transition-colors`}
               />
             </div>
             {errors.email && (
@@ -74,7 +81,7 @@ const Login = () => {
                 })}
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Enter your password"
-                className={`w-full py-4 pl-12 pr-12 border-2 ${errors.password ? 'border-red-500' : 'border-gray-200'} rounded-xl text-base outline-none focus:border-blue-500 transition-colors`}
+                className={`w-full py-4 pl-12 pr-12 border-2 ${errors.password ? 'border-red-500' : 'border-gray-200'} rounded-xl text-base outline-none focus:border-purple-500 transition-colors`}
               />
               <button
                 type="button"
@@ -92,7 +99,7 @@ const Login = () => {
           <div className="flex justify-end mb-6">
             <Link
               to="/forgot-password"
-              className="text-blue-500 no-underline text-sm font-medium hover:text-blue-600 transition-colors"
+              className="text-purple-600 no-underline text-sm font-medium hover:text-purple-700 transition-colors"
             >
               Forgot Password?
             </Link>
@@ -101,7 +108,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className={`w-full py-4 ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:-translate-y-1 hover:shadow-lg cursor-pointer'} text-white border-none rounded-xl text-base font-semibold flex items-center justify-center gap-2 transition-all mb-5`}
+            className={`w-full py-4 ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-pink-500 hover:-translate-y-1 hover:shadow-xl cursor-pointer'} text-white border-none rounded-xl text-base font-semibold flex items-center justify-center gap-2 transition-all mb-5`}
           >
             {isLoading ? 'Signing in...' : (
               <>
@@ -115,7 +122,7 @@ const Login = () => {
             Don't have an account?{' '}
             <Link
               to="/signup"
-              className="text-blue-500 no-underline font-semibold hover:text-blue-600 transition-colors"
+              className="text-purple-600 no-underline font-semibold hover:text-purple-700 transition-colors"
             >
               Sign up
             </Link>

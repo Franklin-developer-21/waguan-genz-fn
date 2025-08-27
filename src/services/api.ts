@@ -24,8 +24,8 @@ export const authAPI = {
   login: (email: string, password: string) =>
     api.post('/auth/login', { email, password }),
   
-  register: (username: string, email: string, password: string) =>
-    api.post('/auth/register', { username, email, password }),
+  register: (userData: { username: string; email: string; password: string; profileImage?: string; location?: string; phone?: string; bio?: string }) =>
+    api.post('/auth/register', userData),
   
   logout: () =>
     api.post('/auth/logout'),
@@ -38,6 +38,9 @@ export const authAPI = {
   
   getProfile: (id: string) =>
     api.get(`/auth/profile/${id}`),
+  
+  updateProfile: (profileData: { username?: string; profileImage?: string; location?: string; phoneNumber?: string; biography?: string }) =>
+    api.put('/auth/profile', profileData),
 };
 
 // Posts API calls

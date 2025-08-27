@@ -22,7 +22,8 @@ const Profile = () => {
     joinDate: 'January 2024',
     postsCount: 0,
     followersCount: 0,
-    followingCount: 0
+    followingCount: 0,
+    profileImage: ''
   });
   const [loading, setLoading] = useState(true);
 
@@ -39,13 +40,14 @@ const Profile = () => {
       setProfile({
         username: userData.username || user!.username,
         email: userData.email || user!.email,
-        phone: userData.phone || '',
-        bio: userData.bio || '',
+        phone: userData.phoneNumber || '',
+        bio: userData.biography || '',
         location: userData.location || '',
         joinDate: new Date(userData.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
         postsCount: userData.postsCount || 0,
         followersCount: userData.followers?.length || 0,
-        followingCount: userData.following?.length || 0
+        followingCount: userData.following?.length || 0,
+        profileImage: userData.profileImage || ''
       });
     } catch (error) {
       console.error('Failed to fetch profile:', error);
@@ -54,9 +56,23 @@ const Profile = () => {
     }
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
-    // Save profile logic here
+  const handleSave = async () => {
+    try {
+      const profileData = {
+        username: profile.username,
+        location: profile.location,
+        phoneNumber: profile.phone,
+        biography: profile.bio
+      };
+      
+      const response = await authAPI.updateProfile(profileData);
+      console.log('Profile updated:', response.data);
+      setIsEditing(false);
+      alert('Profile updated successfully!');
+    } catch (error: any) {
+      console.error('Failed to update profile:', error);
+      alert(error.response?.data?.message || 'Failed to update profile');
+    }
   };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,6 +122,26 @@ const Profile = () => {
     setUploadData({ image: null, caption: '', imagePreview: null });
   };
 
+  const handleProfileImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    try {
+      const reader = new FileReader();
+      const base64Image = await new Promise<string>((resolve) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
+      });
+      
+      const response = await authAPI.updateProfile({ profileImage: base64Image });
+      setProfile(prev => ({ ...prev, profileImage: response.data.user.profileImage }));
+      alert('Profile picture updated successfully!');
+    } catch (error: any) {
+      console.error('Failed to update profile picture:', error);
+      alert(error.response?.data?.message || 'Failed to update profile picture');
+    }
+  };
+
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto p-5 bg-gray-50 min-h-screen">
@@ -121,12 +157,26 @@ const Profile = () => {
       {/* Profile Header */}
       <div className="bg-white rounded-3xl p-10 mb-5 shadow-lg text-center">
         <div className="relative inline-block mb-5">
-          <div className="w-30 h-30 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-5xl font-semibold mx-auto">
-            {profile.username[0].toUpperCase()}
-          </div>
-          <button className="absolute bottom-1 right-1 w-9 h-9 rounded-full bg-blue-500 border-3 border-white text-white cursor-pointer flex items-center justify-center hover:bg-blue-600 transition-colors">
+          {profile.profileImage ? (
+            <img 
+              src={profile.profileImage} 
+              alt="Profile" 
+              className="w-30 h-30 rounded-full object-cover mx-auto border-4 border-white shadow-lg"
+            />
+          ) : (
+            <div className="w-30 h-30 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-5xl font-semibold mx-auto">
+              {profile.username[0]?.toUpperCase()}
+            </div>
+          )}
+          <label className="absolute bottom-1 right-1 w-9 h-9 rounded-full bg-blue-500 border-3 border-white text-white cursor-pointer flex items-center justify-center hover:bg-blue-600 transition-colors">
             <Camera size={16} />
-          </button>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleProfileImageChange}
+              className="hidden"
+            />
+          </label>
         </div>
 
         <h1 className="mb-2 text-3xl font-bold text-gray-800">
