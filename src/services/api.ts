@@ -45,7 +45,7 @@ export const postsAPI = {
   getPosts: () =>
     api.get('/posts'),
   
-  createPost: (postData: { image: string; caption: string }) =>
+  createPost: (postData: { imageUrl: string; caption: string }) =>
     api.post('/posts', postData),
   
   likePost: (postId: string) =>

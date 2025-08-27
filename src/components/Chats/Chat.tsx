@@ -7,6 +7,7 @@ import CallModal from '../VideoCall/CallModal';
 import socket from '../../services/socket';
 import messageSound from '../../assets/sounds/messageSound.mp3';
 import ringing from '../../assets/sounds/Ringing.mp3';
+import { requestNotificationPermission, showMessageNotification } from '../../utils/notifications';
 
 interface ChatUser {
   id: string;
@@ -62,6 +63,7 @@ function Chat() {
 
   useEffect(() => {
     fetchFollowedUsers();
+    requestNotificationPermission();
   }, []);
 
   useEffect(() => {
@@ -117,7 +119,7 @@ function Chat() {
         });
       }
       
-      // Play message sound for received messages (only from others)
+      // Play message sound and show notification for received messages (only from others)
       if (newMessage.userId !== user?.id) {
         const audio = new Audio(messageSound);
         const playPromise = audio.play();
@@ -128,6 +130,10 @@ function Chat() {
             }
           });
         }
+        
+        // Show browser notification
+        const senderName = followedUsers.find(u => u.id === newMessage.userId)?.name || 'Someone';
+        showMessageNotification(senderName, newMessage.text);
       }
     });
 

@@ -82,7 +82,7 @@ const Profile = () => {
       });
       
       const postData = {
-        image: base64Image,
+        imageUrl: base64Image,
         caption: uploadData.caption
       };
       

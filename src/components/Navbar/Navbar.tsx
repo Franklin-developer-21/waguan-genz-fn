@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Home, MessageCircle, User, Settings, LogOut, Bell, Search, Users, Plus } from 'lucide-react';
 import { notificationsAPI } from '../../services/api';
+import { requestNotificationPermission } from '../../utils/notifications';
 // import socket from '../../services/socket';
 
 interface NavbarProps {
@@ -24,10 +25,12 @@ const Navbar = ({ isAuthenticated, user, onLogout }: NavbarProps) => {
   useEffect(() => {
     if (isAuthenticated) {
       fetchNotificationCount();
+      requestNotificationPermission();
       
       // TODO: Enable when Socket.IO is properly configured
-      // socket.on('newNotification', () => {
+      // socket.on('newNotification', (notification) => {
       //   setUnreadCount(prev => prev + 1);
+      //   showGeneralNotification('New Notification', notification.message);
       // });
 
       // return () => {

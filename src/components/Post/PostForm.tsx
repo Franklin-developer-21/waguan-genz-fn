@@ -41,7 +41,7 @@ const PostForm = () => {
       });
 
       const postData = {
-        image: base64Image,
+        imageUrl: base64Image,
         caption: caption
       };
 
