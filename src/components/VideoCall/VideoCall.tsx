@@ -26,6 +26,8 @@ const VideoCall = ({
   const [callDuration, setCallDuration] = useState(0);
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+  const localStreamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -37,18 +39,29 @@ const VideoCall = ({
       }, 1000);
     }
 
-    // Initialize media stream
+    // Initialize media stream and WebRTC
     if (callStatus === 'connected' || callStatus === 'incoming') {
       initializeMedia();
+      setupPeerConnection();
     }
+
+    // Socket event listeners for WebRTC signaling
+    socket.on('offer', handleOffer);
+    socket.on('answer', handleAnswer);
+    socket.on('ice-candidate', handleIceCandidate);
 
     return () => {
       if (timer) clearInterval(timer);
-      // Cleanup media streams
-      if (localVideoRef.current && localVideoRef.current.srcObject) {
-        const stream = localVideoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach(track => track.stop());
+      // Cleanup media streams and peer connection
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(track => track.stop());
       }
+      if (peerConnectionRef.current) {
+        peerConnectionRef.current.close();
+      }
+      socket.off('offer', handleOffer);
+      socket.off('answer', handleAnswer);
+      socket.off('ice-candidate', handleIceCandidate);
     };
   }, [callStatus]);
 
@@ -56,11 +69,24 @@ const VideoCall = ({
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: isVideoCall ? { width: 1280, height: 720 } : false,
-        audio: true
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
       });
+      
+      localStreamRef.current = stream;
       
       if (localVideoRef.current && isVideoCall) {
         localVideoRef.current.srcObject = stream;
+      }
+      
+      // Add stream to peer connection if it exists
+      if (peerConnectionRef.current) {
+        stream.getTracks().forEach(track => {
+          peerConnectionRef.current?.addTrack(track, stream);
+        });
       }
     } catch (error) {
       console.error('Failed to access camera/microphone:', error);
@@ -68,10 +94,79 @@ const VideoCall = ({
     }
   };
 
+  const setupPeerConnection = () => {
+    const configuration = {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+      ]
+    };
+    
+    peerConnectionRef.current = new RTCPeerConnection(configuration);
+    
+    // Handle remote stream
+    peerConnectionRef.current.ontrack = (event) => {
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = event.streams[0];
+      }
+    };
+    
+    // Handle ICE candidates
+    peerConnectionRef.current.onicecandidate = (event) => {
+      if (event.candidate && recipientId) {
+        socket.emit('ice-candidate', {
+          candidate: event.candidate,
+          to: recipientId
+        });
+      }
+    };
+    
+    // Add local stream if available
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(track => {
+        peerConnectionRef.current?.addTrack(track, localStreamRef.current!);
+      });
+    }
+  };
+  
+  const handleOffer = async (data: { offer: RTCSessionDescriptionInit; from: string }) => {
+    if (!peerConnectionRef.current) return;
+    
+    await peerConnectionRef.current.setRemoteDescription(data.offer);
+    const answer = await peerConnectionRef.current.createAnswer();
+    await peerConnectionRef.current.setLocalDescription(answer);
+    
+    socket.emit('answer', {
+      answer,
+      to: data.from
+    });
+  };
+  
+  const handleAnswer = async (data: { answer: RTCSessionDescriptionInit }) => {
+    if (!peerConnectionRef.current) return;
+    await peerConnectionRef.current.setRemoteDescription(data.answer);
+  };
+  
+  const handleIceCandidate = async (data: { candidate: RTCIceCandidateInit }) => {
+    if (!peerConnectionRef.current) return;
+    await peerConnectionRef.current.addIceCandidate(data.candidate);
+  };
+  
+  const createOffer = async () => {
+    if (!peerConnectionRef.current || !recipientId) return;
+    
+    const offer = await peerConnectionRef.current.createOffer();
+    await peerConnectionRef.current.setLocalDescription(offer);
+    
+    socket.emit('offer', {
+      offer,
+      to: recipientId
+    });
+  };
+
   const toggleVideo = () => {
-    if (localVideoRef.current && localVideoRef.current.srcObject) {
-      const stream = localVideoRef.current.srcObject as MediaStream;
-      const videoTrack = stream.getVideoTracks()[0];
+    if (localStreamRef.current) {
+      const videoTrack = localStreamRef.current.getVideoTracks()[0];
       if (videoTrack) {
         videoTrack.enabled = !isVideoEnabled;
       }
@@ -80,9 +175,8 @@ const VideoCall = ({
   };
 
   const toggleAudio = () => {
-    if (localVideoRef.current && localVideoRef.current.srcObject) {
-      const stream = localVideoRef.current.srcObject as MediaStream;
-      const audioTrack = stream.getAudioTracks()[0];
+    if (localStreamRef.current) {
+      const audioTrack = localStreamRef.current.getAudioTracks()[0];
       if (audioTrack) {
         audioTrack.enabled = !isAudioEnabled;
       }
@@ -96,9 +190,11 @@ const VideoCall = ({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleAcceptCall = () => {
+  const handleAcceptCall = async () => {
     if (recipientId) {
       socket.emit('answerCall', { signal: null, to: recipientId });
+      // Create WebRTC offer after accepting
+      setTimeout(() => createOffer(), 1000);
     }
     if (onAcceptCall) {
       onAcceptCall();

@@ -32,7 +32,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 flex items-center justify-center p-5 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-blue-500 to-teal-400 flex items-center justify-center p-5 relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0">
         <div className="absolute top-20 left-20 w-72 h-72 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
@@ -60,7 +60,7 @@ const Login = () => {
                 })}
                 type="email"
                 placeholder="Enter your email"
-                className={`w-full py-4 pl-12 pr-4 border-2 ${errors.email ? 'border-red-500' : 'border-gray-200'} rounded-xl text-base outline-none focus:border-purple-500 transition-colors`}
+                className={`w-full py-4 pl-12 pr-4 border-2 ${errors.email ? 'border-red-500' : 'border-gray-200'} rounded-xl text-base outline-none focus:border-blue-500 transition-colors`}
               />
             </div>
             {errors.email && (
@@ -81,7 +81,7 @@ const Login = () => {
                 })}
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Enter your password"
-                className={`w-full py-4 pl-12 pr-12 border-2 ${errors.password ? 'border-red-500' : 'border-gray-200'} rounded-xl text-base outline-none focus:border-purple-500 transition-colors`}
+                className={`w-full py-4 pl-12 pr-12 border-2 ${errors.password ? 'border-red-500' : 'border-gray-200'} rounded-xl text-base outline-none focus:border-blue-500 transition-colors`}
               />
               <button
                 type="button"
@@ -99,7 +99,7 @@ const Login = () => {
           <div className="flex justify-end mb-6">
             <Link
               to="/forgot-password"
-              className="text-purple-600 no-underline text-sm font-medium hover:text-purple-700 transition-colors"
+              className="text-blue-600 no-underline text-sm font-medium hover:text-blue-700 transition-colors"
             >
               Forgot Password?
             </Link>
@@ -108,7 +108,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className={`w-full py-4 ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-pink-500 hover:-translate-y-1 hover:shadow-xl cursor-pointer'} text-white border-none rounded-xl text-base font-semibold flex items-center justify-center gap-2 transition-all mb-5`}
+            className={`w-full py-4 ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:-translate-y-1 hover:shadow-xl cursor-pointer'} text-white border-none rounded-xl text-base font-semibold flex items-center justify-center gap-2 transition-all mb-5`}
           >
             {isLoading ? 'Signing in...' : (
               <>
@@ -122,7 +122,7 @@ const Login = () => {
             Don't have an account?{' '}
             <Link
               to="/signup"
-              className="text-purple-600 no-underline font-semibold hover:text-purple-700 transition-colors"
+              className="text-blue-600 no-underline font-semibold hover:text-blue-700 transition-colors"
             >
               Sign up
             </Link>

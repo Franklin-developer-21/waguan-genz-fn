@@ -229,7 +229,7 @@ const Profile = () => {
           Profile Information
         </h2>
 
-        <div className="grid gap-5">
+        <div className="grid lg:grid-cols-2 md:grid-cols-2 sm:grid-cols-1 gap-5">
           {/* Email */}
           <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
             <Mail size={20} className="text-blue-500" />
@@ -302,7 +302,7 @@ const Profile = () => {
           </div>
 
           {/* Bio */}
-          <div className="p-4 bg-gray-50 rounded-xl">
+          {/* <div className="p-4 bg-gray-50 rounded-xl">
             <div className="text-sm text-gray-600 mb-2">Bio</div>
             {isEditing ? (
               <textarea
@@ -315,7 +315,7 @@ const Profile = () => {
                 {profile.bio}
               </div>
             )}
-          </div>
+          </div> */}
         </div>
 
         {isEditing && (

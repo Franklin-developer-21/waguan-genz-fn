@@ -50,6 +50,9 @@ function Chat() {
   const [incomingCallData, setIncomingCallData] = useState<any>(null);
   const [showStickers, setShowStickers] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingUser, setTypingUser] = useState<string | null>(null);
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const stickers = [
@@ -188,6 +191,20 @@ function Chat() {
     socket.on('callFailed', ({ message }) => {
       setShowCallModal(false);
       alert(`Call failed: ${message}`);
+    });
+
+    socket.on('userTyping', ({ userId, username }) => {
+      if (userId !== user?.id) {
+        setTypingUser(username);
+        setIsTyping(true);
+      }
+    });
+
+    socket.on('userStoppedTyping', ({ userId }) => {
+      if (userId !== user?.id) {
+        setIsTyping(false);
+        setTypingUser(null);
+      }
     });
 
     return () => {
@@ -385,6 +402,30 @@ function Chat() {
     setShowSidebar(true); // Always show sidebar when going back
   };
 
+  const handleTyping = () => {
+    if (!selectedChat || !user) return;
+    
+    const chatId = generateChatId(user.id, selectedChat.id);
+    socket.emit('typing', {
+      chatId,
+      userId: user.id,
+      username: user.username
+    });
+    
+    if (typingTimeout) {
+      clearTimeout(typingTimeout);
+    }
+    
+    const timeout = setTimeout(() => {
+      socket.emit('stopTyping', {
+        chatId,
+        userId: user.id
+      });
+    }, 1000);
+    
+    setTypingTimeout(timeout);
+  };
+
   const filteredUsers = followedUsers.filter(chat => 
     chat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     chat.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
@@ -537,6 +578,22 @@ function Chat() {
                   </div>
                   ))}
                   <div ref={messagesEndRef} />
+                  
+                  {/* Typing Indicator */}
+                  {isTyping && typingUser && (
+                    <div className="flex justify-start mb-3">
+                      <div className="bg-gray-200 px-4 py-2 rounded-2xl">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-600">{typingUser} is typing</span>
+                          <div className="flex gap-1">
+                            <div className="w-1 h-1 bg-gray-500 rounded-full animate-bounce"></div>
+                            <div className="w-1 h-1 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                            <div className="w-1 h-1 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </>
               ) : (
                 <div className="flex items-center justify-center h-full">
@@ -581,7 +638,10 @@ function Chat() {
                 <input
                   type="text"
                   value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  onChange={(e) => {
+                    setMessage(e.target.value);
+                    handleTyping();
+                  }}
                   onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                   onTouchStart={(e) => e.stopPropagation()}
                   onFocus={(e) => {
