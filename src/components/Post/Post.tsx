@@ -17,7 +17,9 @@ interface Reply {
 }
 
 interface Comment {
+  _id?: string;
   userId: string | User;
+  username?: string | User;
   text: string;
   timestamp: Date;
   replies?: Reply[];
@@ -60,6 +62,7 @@ const Post = ({ post }: PostProps) => {
       const newComment: Comment = {
         userId: user.id,
         text: comment,
+        username:user.username,
         timestamp: new Date(),
         replies: [],
       };
@@ -74,6 +77,11 @@ const Post = ({ post }: PostProps) => {
     e.preventDefault();
     if (!replyText.trim() || !user) return;
     try {
+      const comment = comments[commentIndex];
+      const commentId = comment._id || commentIndex.toString(); // Use actual comment ID if available
+      
+      await postsAPI.replyToComment(post._id, commentId, replyText);
+      
       const newReply: Reply = {
         userId: user.id,
         text: replyText,
@@ -96,7 +104,7 @@ const Post = ({ post }: PostProps) => {
   const getUsername = (userId: User | string): string => {
     if (typeof userId === 'object') return userId.username;
     if (typeof userId === 'string' && user && user.id === userId) return user.username;
-    return typeof userId === 'string' ? userId : 'user';
+    return typeof userId === 'string' ? userId : 'you';
   };
 
   const formatTime = (timestamp: Date | string) => {
@@ -235,7 +243,7 @@ const Post = ({ post }: PostProps) => {
               <div key={i}>
                 <div className="text-sm text-gray-900">
                   <span className="font-semibold mr-2">
-                    {getUsername(c.userId)}
+                    {getUsername(c.username || c.userId)}
                   </span>
                   {c.text}
                   <button

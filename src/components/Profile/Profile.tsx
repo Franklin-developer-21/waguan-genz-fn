@@ -82,17 +82,20 @@ const Profile = () => {
       });
       
       const postData = {
-        imageUrl: base64Image,
-        caption: uploadData.caption
+        image: base64Image,
+        caption: uploadData.caption.trim()
       };
       
-      await postsAPI.createPost(postData);
+      console.log('Uploading post from profile...');
+      const response = await postsAPI.createPost(postData);
+      console.log('Post uploaded successfully:', response.data);
       setShowUploadModal(false);
       setUploadData({ image: null, caption: '', imagePreview: null });
       alert('Post uploaded successfully!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to upload post:', error);
-      alert('Failed to upload post. Please try again.');
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to upload post';
+      alert(`Error: ${errorMessage}`);
     } finally {
       setIsUploading(false);
     }

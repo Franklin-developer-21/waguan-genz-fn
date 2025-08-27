@@ -41,15 +41,18 @@ const PostForm = () => {
       });
 
       const postData = {
-        imageUrl: base64Image,
-        caption: caption
+        image: base64Image,
+        caption: caption.trim()
       };
 
-      await postsAPI.createPost(postData);
+      console.log('Sending post data:', { ...postData, imageUrl: 'base64_data_truncated' });
+      const response = await postsAPI.createPost(postData);
+      console.log('Post created successfully:', response.data);
       navigate('/');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create post:', error);
-      alert('Failed to create post. Please try again.');
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to create post';
+      alert(`Error: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
