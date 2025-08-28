@@ -716,7 +716,7 @@ function Chat() {
         <VideoCall
           isVideoCall={callType === 'video'}
           recipientName={selectedChat.name}
-          recipientId={selectedChat.id}
+          recipientId={incomingCallData?.from || selectedChat.id}
           onEndCall={() => {
             // Emit endCall event to the other user
             const otherUserId = incomingCallData?.from || selectedChat.id;
